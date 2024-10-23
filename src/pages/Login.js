@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -6,11 +6,22 @@ import {
   FacebookAuthProvider,
 } from "firebase/auth";
 import { auth } from "../firebase/config";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        navigate("/dashboard");
+      }
+    });
+
+    return () => unsubscribe(); // Clean up the listener on component unmount
+  }, [navigate]);
 
   // Social login providers
   const googleProvider = new GoogleAuthProvider();
@@ -28,22 +39,34 @@ const Login = () => {
   };
 
   // Handle Google login
-  const handleGoogleSignIn = async () => {
+  const handleGoogleLogin = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
-      console.log("Google sign in successful");
-    } catch (err) {
-      setError(err.message);
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log("Google sign-in successful:", result.user); // Debugging log
+
+      // Directly navigate to the dashboard after successful sign-in
+      if (result.user) {
+        navigate("/dashboard"); // Programmatic navigation
+      }
+    } catch (error) {
+      console.error("Google login failed:", error); // Error logging
+      setError("Google login failed. Please try again.");
     }
   };
 
   // Handle Facebook login
-  const handleFacebookSignIn = async () => {
+  const handleFacebookLogin = async () => {
     try {
-      await signInWithPopup(auth, facebookProvider);
-      console.log("Facebook sign in successful");
-    } catch (err) {
-      setError(err.message);
+      const result = await signInWithPopup(auth, facebookProvider);
+      console.log("Facebook sign-in successful:", result.user); // Debugging log
+
+      // Directly navigate to the dashboard after successful sign-in
+      if (result.user) {
+        navigate("/dashboard"); // Programmatic navigation
+      }
+    } catch (error) {
+      console.error("Facebook login failed:", error); // Error logging
+      setError("Facebook login failed. Please try again.");
     }
   };
 
@@ -72,8 +95,8 @@ const Login = () => {
 
         {/* Google Sign-in Button */}
         <button
-          type="button"
-          onClick={handleGoogleSignIn}
+          type="submit"
+          onClick={handleGoogleLogin}
           className="bg-red-500 text-white py-2 px-4 mb-4 w-full"
         >
           Sign in with Google
@@ -81,8 +104,8 @@ const Login = () => {
 
         {/* Facebook Sign-in Button */}
         <button
-          type="button"
-          onClick={handleFacebookSignIn}
+          type="submit"
+          onClick={handleFacebookLogin}
           className="bg-blue-600 text-white py-2 px-4 w-full"
         >
           Sign in with Facebook

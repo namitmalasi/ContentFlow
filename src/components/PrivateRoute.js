@@ -1,21 +1,15 @@
 import React from "react";
-import { Route, Navigate, Routes } from "react-router-dom";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../firebase/config";
+import { Navigate } from "react-router-dom";
+import { auth } from "../firebase/config"; // Import your Firebase setup
 
-const PrivateRoute = ({ component: Component, ...rest }) => {
-  const [user] = useAuthState(auth);
+const PrivateRoute = ({ children }) => {
+  const user = auth.currentUser;
 
-  return (
-    <Routes>
-      <Route
-        {...rest}
-        render={(props) =>
-          user ? <Component {...props} /> : <Navigate to="/login" />
-        }
-      />
-    </Routes>
-  );
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  return children;
 };
 
 export default PrivateRoute;
